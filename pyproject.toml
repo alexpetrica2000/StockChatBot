@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "lseg-challenge"
+version = "0.1.0"
+description = "Package dependency manager for LSEG Challenge"
+authors = ["alexpetrica2000 <iliealex54@yahoo.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9"
+fastapi = ">=0.115.12,<0.116.0"
+uvicorn = ">=0.34.0,<0.35.0"
+jinja2 = ">=3.1.6,<4.0.0"
+python-multipart = ">=0.0.20,<0.0.21"
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+isort = "^6.0.1"
+pytest = "^8.3.5"
+pytest-cov = "^6.1.1"
+httpx = "^0.28.1"
+
+[tool.poetry.scripts]
+dev = "uvicorn main:app --reload"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
