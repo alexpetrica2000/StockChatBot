@@ -1,33 +1,62 @@
+
 <!DOCTYPE html>
 <html>
-   <head>
-       <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700&display=swap" rel="stylesheet">
-
-      <title>StockBot Chat</title>
-      <link rel="stylesheet" href="/static/style.css">
-   </head>
+<head>
+    <meta charset="UTF-8">
+    <title>StockBot Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
     <div class="chat-header">
-       <img src="/static/lseg.png" alt="LSEG Logo">
-       <span class="chat-title">Chatbot</span>
+        <img src="/static/lseg.png" alt="LSEG Logo">
+        <span class="chat-title">Chatbot</span>
     </div>
-      <div class="chat-container" id="chat-container">
-         <div class="bot-message">
+
+    <div class="chat-container" id="chat-container">
+        <div class="bot-message">
             <div class="bot-bubble">
-               👋 Hello! Welcome to LSEG StockBot.<br>Select a stock exchange to begin.
+                👋 Hello! Welcome to LSEG StockBot.<br>Select a stock exchange to begin.
             </div>
-         </div>
-         <div class="bot-message">
+        </div>
+        <div class="bot-message">
             <div class="bot-bubble">
-               <div class="option-list">
-                  <button onclick="sendAction('select_exchange', 'LSE')">London Stock Exchange</button>
-                  <button onclick="sendAction('select_exchange', 'NYSE')">New York Stock Exchange</button>
-                  <button onclick="sendAction('select_exchange', 'NASDAQ')">NASDAQ Stock Exchange</button>
-               </div>
+                <div class="option-list">
+                    <button onclick="sendAction('select_exchange', 'LSE')">London Stock Exchange</button>
+                    <button onclick="sendAction('select_exchange', 'NYSE')">New York Stock Exchange</button>
+                    <button onclick="sendAction('select_exchange', 'NASDAQ')">NASDAQ Stock Exchange</button>
+                </div>
             </div>
-         </div>
-      </div>
-      <script>
-         async function sendAction(action, value, options = {}) {
+        </div>
+    </div>
+
+    <script>
+        function simulateTypingMessage(renderCallback, delay = 1200) {
+            const container = document.getElementById("chat-container");
+            const typingMessage = document.createElement("div");
+            typingMessage.classList.add("bot-message");
+
+            const typingBubble = document.createElement("div");
+            typingBubble.classList.add("bot-bubble");
+            typingBubble.innerHTML = `
+                <div class="typing">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+
+            typingMessage.appendChild(typingBubble);
+            container.appendChild(typingMessage);
+            container.scrollTop = container.scrollHeight;
+
+            setTimeout(() => {
+                renderCallback(typingBubble);
+                container.scrollTop = container.scrollHeight;
+            }, delay);
+        }
+
+        async function sendAction(action, value, options = {}) {
             const container = document.getElementById("chat-container");
 
             if (!options.silentUserBubble) {
@@ -38,109 +67,77 @@
                 container.scrollTop = container.scrollHeight;
             }
 
-             // Fetch response from server
-             const formData = new FormData();
-             formData.append("action", action);
-             formData.append("value", value);
+            const formData = new FormData();
+            formData.append("action", action);
+            formData.append("value", value);
 
-             const response = await fetch("/chat", {
-                 method: "POST",
-                 body: formData
-             });
-
-             const data = await response.json();
-
-             const botMessage = document.createElement("div");
-             botMessage.classList.add("bot-message");
-             const botBubble = document.createElement("div");
-             botBubble.classList.add("bot-bubble");
-
-             if (data.type === "stock_list") {
-                 botBubble.innerHTML = `<p>📈 Here are the top 5 stocks on <strong>${data.exchange_name}</strong>:</p>`;
-                 const list = document.createElement("div");
-                 list.classList.add("option-list");
-                 data.stocks.forEach(stock => {
-                     const btn = document.createElement("button");
-                     btn.textContent = stock.stockName;
-                     btn.onclick = () => sendAction("select_stock", stock.code);
-                     list.appendChild(btn);
-                 });
-                 botBubble.appendChild(list);
-             } else if (data.type === "stock_price") {
-                 botBubble.innerHTML = `
-                     💰 <strong>${data.stock_name}</strong> is priced at <strong>${data.price}</strong>.<br>
-                     <p>What would you like to do?</p>
-                     <div class="option-list">
-                         <button onclick="showHomeMenu()">🏠 Main Menu</button>
-                         <button onclick="goBackToStocks('${data.exchange_code}')">🔙 Go Back</button>
-                     </div>
-                 `;
-             } else {
-                 botBubble.textContent = "Oops! Something went wrong.";
-             }
-
-             botMessage.appendChild(botBubble);
-             container.appendChild(botMessage);
-             container.scrollTop = container.scrollHeight;
-         }
-function showHomeMenu() {
-    const container = document.getElementById("chat-container");
-
-    // ✅ Add user message bubble for "Main Menu"
-    const userMessage = document.createElement("div");
-    userMessage.classList.add("user-message");
-    userMessage.innerHTML = `<div class="user-bubble">🏠 Main Menu</div>`;
-    container.appendChild(userMessage);
-
-    // ✅ Add spacer bot bubble to separate visually
-    const spacerMessage = document.createElement("div");
-    spacerMessage.classList.add("bot-message");
-    const spacerBubble = document.createElement("div");
-    spacerBubble.classList.add("bot-bubble");
-    spacerBubble.style.visibility = "hidden";
-    spacerBubble.style.padding = "10px";
-    spacerBubble.innerHTML = "spacer";
-    spacerMessage.appendChild(spacerBubble);
-    container.appendChild(spacerMessage);
-
-    // ✅ Add bot response with exchange options
-    const botMessage = document.createElement("div");
-    botMessage.classList.add("bot-message");
-
-    const botBubble = document.createElement("div");
-    botBubble.classList.add("bot-bubble");
-    botBubble.innerHTML = `
-        👋 Back to main menu.<br>Please select a stock exchange.
-        <div class="option-list">
-            <button onclick="sendAction('select_exchange', 'LSE')">London Stock Exchange</button>
-            <button onclick="sendAction('select_exchange', 'NYSE')">New York Stock Exchange</button>
-            <button onclick="sendAction('select_exchange', 'NASDAQ')">NASDAQ Stock Exchange</button>
-        </div>
-    `;
-
-    botMessage.appendChild(botBubble);
-    container.appendChild(botMessage);
-
-    container.scrollTop = container.scrollHeight;
-}
-
-
-
-         function goBackToStocks(exchangeCode) {
-             const container = document.getElementById("chat-container");
-
-             // User says "Back"
-             const userMessage = document.createElement("div");
-             userMessage.classList.add("user-message");
-             userMessage.innerHTML = `<div class="user-bubble">🔙 Back</div>`;
-             container.appendChild(userMessage);
-
-             sendAction("select_exchange", exchangeCode, {
-                fromBack: true,
-                silentUserBubble: true  // ⬅️ this prevents user bubble
+            const response = await fetch("/chat", {
+                method: "POST",
+                body: formData
             });
-         }
 
-      </script>
-   </body>
+            const data = await response.json();
+
+            simulateTypingMessage((botBubble) => {
+                if (data.type === "stock_list") {
+                    botBubble.innerHTML = `<p>📈 Here are the top 5 stocks on <strong>${data.exchange_name}</strong>:</p>`;
+                    const list = document.createElement("div");
+                    list.classList.add("option-list");
+                    data.stocks.forEach(stock => {
+                        const btn = document.createElement("button");
+                        btn.textContent = stock.stockName;
+                        btn.onclick = () => sendAction("select_stock", stock.code);
+                        list.appendChild(btn);
+                    });
+                    botBubble.appendChild(list);
+                } else if (data.type === "stock_price") {
+                    botBubble.innerHTML = `
+                        💰 <strong>${data.stock_name}</strong> is priced at <strong>${data.price}</strong>.<br>
+                        <p>What would you like to do?</p>
+                        <div class="option-list">
+                            <button onclick="showHomeMenu()">🏠 Main Menu</button>
+                            <button onclick="goBackToStocks('${data.exchange_code}')">🔙 Go Back</button>
+                        </div>
+                    `;
+                } else {
+                    botBubble.textContent = "Oops! Something went wrong.";
+                }
+            });
+        }
+
+        function showHomeMenu() {
+            const container = document.getElementById("chat-container");
+
+            const userMessage = document.createElement("div");
+            userMessage.classList.add("user-message");
+            userMessage.innerHTML = `<div class="user-bubble">🏠 Main Menu</div>`;
+            container.appendChild(userMessage);
+
+            simulateTypingMessage((botBubble) => {
+                botBubble.innerHTML = `
+                    👋 Back to main menu.<br>Please select a stock exchange.
+                    <div class="option-list">
+                        <button onclick="sendAction('select_exchange', 'LSE')">London Stock Exchange</button>
+                        <button onclick="sendAction('select_exchange', 'NYSE')">New York Stock Exchange</button>
+                        <button onclick="sendAction('select_exchange', 'NASDAQ')">NASDAQ Stock Exchange</button>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        function goBackToStocks(exchangeCode) {
+            const container = document.getElementById("chat-container");
+
+            const userMessage = document.createElement("div");
+            userMessage.classList.add("user-message");
+            userMessage.innerHTML = `<div class="user-bubble">🔙 Back</div>`;
+            container.appendChild(userMessage);
+
+            sendAction("select_exchange", exchangeCode, {
+                fromBack: true,
+                silentUserBubble: true
+            });
+        }
+    </script>
+</body>
 </html>
