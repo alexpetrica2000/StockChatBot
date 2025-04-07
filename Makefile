@@ -13,3 +13,12 @@ logs:
 stop:
 	docker stop $(APP_NAME) || true
 	docker rm $(APP_NAME) || true
+
+poetry-install:
+	poetry install
+
+poetry-run:
+	poetry run uvicorn main:app --reload
+
+poetry-shell:
+	poetry shell
