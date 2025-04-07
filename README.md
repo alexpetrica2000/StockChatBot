@@ -79,3 +79,15 @@ It also let us deploy the app to AWS in just a couple of steps.
 Poetry helped keeping development clean and consistent. It manages all dependencies, handle virtual environments for isolation, and gives simple commands to install and run the app. Compared to old-school `requirements.txt`, Poetry just made everything easier to manage — especially in a team setting.
 
 ---
+
+## Tests
+
+Application has a small set of unit tests to make sure the chatbot logic works as expected and returns valid responses for different user actions. These tests simulate realistic usage — such as selecting a stock or switching between exchanges — and check that the backend responds correctly.
+
+### How to Run Tests
+
+If you're using Poetry:
+
+```bash
+poetry run pytest
+```
